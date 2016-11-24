@@ -8,6 +8,9 @@ frequency = {} # char -> amount
 answered = {} # session_key -> set()
 last_step = {} # session_key -> string
 
+def get_last(key):
+  return last_step[key]
+
 def get_key(city):
   ch = city.name[0].lower()
   return frequency.get(ch, 0)

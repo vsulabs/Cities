@@ -2,27 +2,26 @@ from django.shortcuts import render
 from django.template import loader
 from django.contrib import auth
 from django.http import HttpResponse, HttpResponseRedirect
-from .game import is_correct, get_city, get_error_message, init
+from .game import is_correct, get_city, get_error_message, init, get_last
 
 def index(request):
   if not request.session.session_key:
     return init(request)
   
-  last = request.session.get('last_step', '')
-  answer = request.GET.get('answer', '')
-  name = last
-  error = ''
-  answered = request.session.get('answered', set()) 
   key = request.session.session_key
+  answer = request.GET.get('answer', '')
+  name = get_last(key)
+  error = ''
 
   if answer != '':
     error_code = is_correct(key, answer)
     if error_code == 0:
+      print("get_city")
       name = get_city(key, answer)
     else:
       error = get_error_message(error_code)
 
-  print('"' + name + '"')
+  print(name)
   template = loader.get_template('index.html')
   context = {
     'authorized': request.user.is_authenticated(),
