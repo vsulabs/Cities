@@ -13,23 +13,23 @@ def index(request):
   name = last
   error = ''
   answered = request.session.get('answered', set()) 
+  key = request.session.session_key
 
   if answer != '':
-    error_code = is_correct(request.session, answer)
+    error_code = is_correct(key, answer)
     if error_code == 0:
-      request.session['last_step'] = name = get_city(answered, answer)
-      answered.append(answer)
-      answered.append(name)
-      request.session['answered'] = list(answered)
+      name = get_city(key, answer)
     else:
       error = get_error_message(error_code)
 
+  print('"' + name + '"')
   template = loader.get_template('index.html')
   context = {
     'authorized': request.user.is_authenticated(),
     'city': name,
     'error': error
   }
+
   return HttpResponse(template.render(context, request))
 
 
