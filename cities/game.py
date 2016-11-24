@@ -7,14 +7,23 @@ from .models import City
 frequency = {} # char -> amount
 answered = {} # session_key -> set()
 last_step = {} # session_key -> string
+user_session = {} # username -> key 
+
+def login_user(username, key):
+  old_key = user_session[username]
+  answered[key] = answered[old_key]
+  last_step[key] = last_step[old_key]
+  user_session[old_key] = key
+
+  del answered[old_key]
+  del last_step[old_key]
 
 def get_last(key):
-  return last_step[key]
+  return last_step.get(key, '')
 
 def get_key(city):
   ch = city.name[0].lower()
   return frequency.get(ch, 0)
-
 
 def get_city(key, answer):
   last = answer[-1].upper()
@@ -58,6 +67,7 @@ def get_error_message(error):
     )[error]
 
 def init(request):
+  print('init..')
   for city in City.objects.all():
     if city.name == "":
       continue;
@@ -70,6 +80,7 @@ def init(request):
   if not request.session.session_key:
       request.session.save()
 
+  print('inited')
   key = request.session.session_key
   last_step[key] = 'Москва'
   answered[key] = set()

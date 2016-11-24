@@ -3,12 +3,14 @@ from django.template import loader
 from django.contrib import auth
 from django.http import HttpResponse, HttpResponseRedirect
 from .game import is_correct, get_city, get_error_message, init, get_last
+from .game import login_user
 
 def index(request):
-  if not request.session.session_key:
+  key = request.session.session_key
+  last = get_last(key)
+  if last == '':
     return init(request)
   
-  key = request.session.session_key
   answer = request.GET.get('answer', '')
   name = get_last(key)
   error = ''
@@ -40,8 +42,10 @@ def login(request):
     return HttpResponse(template.render({}, request))
 
   user = auth.authenticate(username=username, password=password)
+  key = request.session.session_id
   if user is not None and user.is_active:
     auth.login(request, user)
+    login_user(username, key)
     return HttpResponseRedirect("..")
 
   return HttpResponse(template.render({'error': True}, request))
