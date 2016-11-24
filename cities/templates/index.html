@@ -1,0 +1,17 @@
+{% if authorized %}
+  <a href="logout">Logout</a>
+{% else %}
+  <a href="login">Login</a>
+{% endif %}
+
+{% if error %}
+<p>{{ error }}</p>
+{% endif %}
+<br>
+{{ city }}
+<form action=".">
+	<input name="answer" type="textfield"/>
+  <br>
+  <br>
+	<input type="submit" value="Ответить"/>
+</form>

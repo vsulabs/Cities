@@ -1,0 +1,12 @@
+{% if error %}
+<p>Неправильный логин и/или пароль</p>
+{% endif %}
+
+<form action="." method="POST">
+  <input name="username" type="textfield"/>
+  <br>
+  <input name="password" type="password"/>
+  <br>
+  <input type="submit" name="Войти">
+  {% csrf_token %}
+</form>
