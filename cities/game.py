@@ -88,7 +88,7 @@ def init(request):
     last_step[key] = 'Москва'
     answered[key] = set()
     data = {
-        'authenicated': request.user.is_authenticated(),
+        'authenticated': request.user.is_authenticated(),
         'city': last_step[key],
         'error': ''
     }
