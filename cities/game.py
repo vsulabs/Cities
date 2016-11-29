@@ -4,90 +4,93 @@ from django.contrib import auth
 from django.http import HttpResponse, HttpResponseRedirect
 from .models import City
 
-frequency = {} # char -> amount
-answered = {} # session_key -> set()
-last_step = {} # session_key -> string
-user_session = {} # username -> key 
+frequency = {}     # char -> amount
+answered = {}      # session_key -> set()
+last_step = {}     # session_key -> string
+
 
 def login_user(username, key):
-  old_key = user_session[username]
-  answered[key] = answered[old_key]
-  last_step[key] = last_step[old_key]
-  user_session[old_key] = key
+    # Если логинимся первый раз -- сохраняем текущий прогресс
+    if answered.get(username, None) is None:
+        answered[username] = answered.get(key, set())
 
-  del answered[old_key]
-  del last_step[old_key]
+    if last_step.get(username, None) is None:
+        last_step[username] = last_step.get(key, 'Москва')
+
 
 def get_last(key):
-  return last_step.get(key, '')
+    return last_step.get(key, '')
+
 
 def get_key(city):
-  ch = city.name[0].lower()
-  return frequency.get(ch, 0)
+    ch = city.name[0].lower()
+    return frequency.get(ch, 0)
+
 
 def get_city(key, answer):
-  last = answer[-1].upper()
-  if (last in {'Ь'}):
-    last = answer[-2].upper()
+    last = answer[-1].upper()
+    if last == 'Ь':
+        last = answer[-2].upper()
 
-  cities = City.objects.filter(name__startswith=last).all()
-  cities = (c for c in cities if c.name not in answered[key])
-  cities = sorted(cities, key=get_key)
-  name = cities[0].name
+    cities = City.objects.filter(name__startswith=last).all()
+    cities = (c for c in cities if c.name not in answered[key])
+    cities = sorted(cities, key=get_key)
+    name = cities[0].name
 
-  answered[key].add(answer)
-  answered[key].add(name)
-  last_step[key] = name
+    answered[key].add(answer)
+    answered[key].add(name)
+    last_step[key] = name
 
-  return name
+    return name
+
 
 def is_correct(key, answer):
-  if (answer in answered[key]):
-    return 1
+    if answer in answered[key]:
+        return 1
 
-  all_cities = (c.name.lower() for c in City.objects.all())
-  if (answer.lower() not in all_cities):
-    return 2
+    all_cities = (c.name.lower() for c in City.objects.all())
+    if answer.lower() not in all_cities:
+        return 2
 
-  last = last_step[key][-1]
-  if (last == 'ь'):
-    last = last_step[key][-2]
+    last = last_step[key][-1]
+    if last == 'ь':
+        last = last_step[key][-2]
 
-  if answer[0].lower() != last:
-    return 3
+    if answer[0].lower() != last:
+        return 3
 
-  return 0
+    return 0
+
 
 def get_error_message(error):
-  return (
-    '',
-    'Такой город уже был',
-    'Такого города нету',
-    'Город должен начинаться на последнюю бувку предыдущего'
+    return (
+        '',
+        'Такой город уже был',
+        'Такого города нету',
+        'Город должен начинаться на последнюю бувку предыдущего'
     )[error]
 
+
 def init(request):
-  print('init..')
-  for city in City.objects.all():
-    if city.name == "":
-      continue;
+    for city in City.objects.all():
+        if city.name == "":
+            continue;
 
-    ch = city.name[0].lower()
-    value = frequency.get(ch, 0)
-    frequency[ch] = value + 1;
+        ch = city.name[0].lower()
+        value = frequency.get(ch, 0)
+        frequency[ch] = value + 1;
 
-  template = loader.get_template('index.html')
-  if not request.session.session_key:
-      request.session.save()
+    template = loader.get_template('index.html')
+    if not request.session.session_key:
+        request.session.save()
 
-  print('inited')
-  key = request.session.session_key
-  last_step[key] = 'Москва'
-  answered[key] = set()
-  print("inited: " + key)
-  data = {
-    'city': last_step[key],
-    'error': ''
-  }
+    key = request.session.session_key
+    last_step[key] = 'Москва'
+    answered[key] = set()
+    data = {
+        'authenicated': request.user.is_authenticated(),
+        'city': last_step[key],
+        'error': ''
+    }
 
-  return HttpResponse(template.render(data, request))
+    return HttpResponse(template.render(data, request))
