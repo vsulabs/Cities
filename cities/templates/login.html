@@ -3,10 +3,12 @@
 {% endif %}
 
 <form action="." method="POST">
+  Username:
   <input name="username" type="textfield"/>
   <br>
+  Password:
   <input name="password" type="password"/>
   <br>
-  <input type="submit" name="Войти">
+  <input value="Login" type="submit"/>
   {% csrf_token %}
 </form>
