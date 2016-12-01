@@ -8,6 +8,14 @@ frequency = {}     # char -> amount
 answered = {}      # session_key -> set()
 last_step = {}     # session_key -> string
 
+for city in City.objects.all():
+    if city.name == "":
+        continue;
+
+    ch = city.name[0].lower()
+    value = frequency.get(ch, 0)
+    frequency[ch] = value + 1;
+
 
 def login_user(username, key):
     # Если логинимся первый раз -- сохраняем текущий прогресс
@@ -72,13 +80,6 @@ def get_error_message(error):
 
 
 def init(request):
-    for city in City.objects.all():
-        if city.name == "":
-            continue;
-
-        ch = city.name[0].lower()
-        value = frequency.get(ch, 0)
-        frequency[ch] = value + 1;
 
     template = loader.get_template('index.html')
     if not request.session.session_key:
