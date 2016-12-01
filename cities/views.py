@@ -55,3 +55,8 @@ def login(request):
 def logout(request):
     auth.logout(request)
     return HttpResponseRedirect("..")
+
+
+def reset(request):
+    init(request)
+    return HttpResponseRedirect("..")
