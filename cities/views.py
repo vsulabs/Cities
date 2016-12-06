@@ -1,6 +1,5 @@
-from django.template import loader
 from django.contrib import auth
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from .game import *
 
 # TODO: сложность, проигрыш компа
@@ -8,7 +7,7 @@ from .game import *
 
 def index(request):
     last = get_last(request)
-    if last == '':
+    if len(last) == 0:
         return init(request)
 
     answer = request.GET.get('answer', '')

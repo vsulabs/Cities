@@ -4,22 +4,11 @@ from .models import City
 from .storage import *
 import ast
 
-#TODO: session_key -> freq
-frequency = {}     # char -> amount
-
-for city in City.objects.all():
-    if city.name == "":
-        continue
-
-    ch = city.name[0].lower()
-    value = frequency.get(ch, 0)
-    frequency[ch] = value + 1
-
 
 def get_answered(request):
     answered = get_data(request, 'answered')
     if answered is None:
-        return ['Москва']
+        return []
 
     if isinstance(answered, list):
         return answered
@@ -28,12 +17,23 @@ def get_answered(request):
 
 
 def get_last(request):
-    return get_answered(request)[-1]
+    answered = get_answered(request)
+    if len(answered) == 0:
+        return ''
+
+    return answered[-1]
 
 
-def get_key(city):
-    char = city.name[0].lower()
-    return frequency.get(char, 0)
+def get_comparator(request):
+    def get_key(city):
+        char = city.name[0].lower()
+        frequency = get_data(request, 'frequency')
+        if isinstance(frequency, str):
+            frequency = ast.literal_eval(frequency)
+
+        return frequency.get(char, 0)
+
+    return get_key
 
 
 def get_city(request, answer):
@@ -42,12 +42,10 @@ def get_city(request, answer):
         last = answer[-2].upper()
 
     answered = get_answered(request)
-    if answered is None:
-        answered = []
 
     cities = City.objects.filter(name__startswith=last).all()
     cities = (c for c in cities if c.name not in answered)
-    cities = sorted(cities, key=get_key)
+    cities = sorted(cities, key=get_comparator(request))
     name = cities[0].name
 
     answered.append(answer)
@@ -87,11 +85,23 @@ def get_error_message(error):
     )[error]
 
 
+def init_freq(request):
+    frequency = {}  # char -> amount
+    for city in City.objects.all():
+        if city.name == "":
+            continue
+
+        ch = city.name[0].lower()
+        value = frequency.get(ch, 0)
+        frequency[ch] = value + 1
+
+    set_data(request, 'frequency', frequency)
+
+
 def init(request):
     template = loader.get_template('index.html')
-    if not request.session.session_key:
-        request.session.save()
 
+    init_freq(request)
     default_array = ['Москва']
     set_data(request, 'answered', default_array)
     data = {
