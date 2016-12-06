@@ -1,28 +1,24 @@
 from django.template import loader
 from django.contrib import auth
 from django.http import HttpResponse, HttpResponseRedirect
-from .game import is_correct, get_city, get_error_message, init, get_last
-from .game import login_user
+from .game import *
 
 # TODO: сложность, проигрыш компа
 
-def index(request):
-    key = request.user.username
-    if key is None or key == '':
-        key = request.session.session_key
 
-    last = get_last(key)
+def index(request):
+    last = get_last(request)
     if last == '':
         return init(request)
-  
+
     answer = request.GET.get('answer', '')
     name = last
     error = ''
 
     if answer != '':
-        error_code = is_correct(key, answer)
+        error_code = is_correct(request, answer)
         if error_code == 0:
-            name = get_city(key, answer)
+            name = get_city(request, answer)
         else:
             error = get_error_message(error_code)
 
@@ -44,10 +40,8 @@ def login(request):
         return HttpResponse(template.render({}, request))
 
     user = auth.authenticate(username=username, password=password)
-    key = request.session.session_key
     if user is not None and user.is_active:
         auth.login(request, user)
-        login_user(username, key)
         return HttpResponseRedirect("..")
 
     return HttpResponse(template.render({'error': True}, request))

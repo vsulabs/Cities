@@ -3,12 +3,11 @@ from django.template import loader
 from django.contrib import auth
 from django.http import HttpResponse, HttpResponseRedirect
 from .models import City
+from .storage import *
+import ast
 
 #TODO: session_key -> freq
 frequency = {}     # char -> amount
-#TODO: move to session / db
-answered = {}      # session_key -> set()
-last_step = {}     # session_key -> string
 
 for city in City.objects.all():
     if city.name == "":
@@ -19,17 +18,19 @@ for city in City.objects.all():
     frequency[ch] = value + 1
 
 
-def login_user(username, key):
-    # Если логинимся первый раз -- сохраняем текущий прогресс
-    if answered.get(username) is None:
-        answered[username] = answered.get(key, set())
+def get_answered(request):
+    answered = get_data(request, 'answered')
+    if answered is None:
+        return ['Москва']
 
-    if last_step.get(username) is None:
-        last_step[username] = last_step.get(key, 'Москва')
+    if isinstance(answered, list):
+        return answered
+
+    return ast.literal_eval(answered)
 
 
-def get_last(key):
-    return last_step.get(key, '')
+def get_last(request):
+    return get_answered(request)[-1]
 
 
 def get_key(city):
@@ -37,34 +38,41 @@ def get_key(city):
     return frequency.get(ch, 0)
 
 
-def get_city(key, answer):
+def get_city(request, answer):
     last = answer[-1].upper()
     if last == 'Ь':
         last = answer[-2].upper()
 
+    answered = get_answered(request)
+    if answered is None:
+        answered = []
+
     cities = City.objects.filter(name__startswith=last).all()
-    cities = (c for c in cities if c.name not in answered[key])
+    cities = (c for c in cities if c.name not in answered)
     cities = sorted(cities, key=get_key)
     name = cities[0].name
 
-    answered[key].add(answer)
-    answered[key].add(name)
-    last_step[key] = name
+    answered.append(answer)
+    answered.append(name)
+    set_data(request, 'answered', answered)
 
     return name
 
 
-def is_correct(key, answer):
-    if answer in answered[key]:
+def is_correct(request, answer):
+    answered = get_answered(request)
+
+    if answer in answered:
         return 1
 
     all_cities = (c.name.lower() for c in City.objects.all())
     if answer.lower() not in all_cities:
         return 2
 
-    last = last_step[key][-1]
+    last_word = answered[-1]
+    last = last_word[-1]
     if last == 'ь':
-        last = last_step[key][-2]
+        last = last_word[-2]
 
     if answer[0].lower() != last:
         return 3
@@ -86,12 +94,11 @@ def init(request):
     if not request.session.session_key:
         request.session.save()
 
-    key = request.session.session_key
-    last_step[key] = 'Москва'
-    answered[key] = set()
+    default_array = ['Москва']
+    set_data(request, 'answered', default_array)
     data = {
         'authenticated': request.user.is_authenticated(),
-        'city': last_step[key],
+        'city': default_array[-1],
         'error': ''
     }
 
