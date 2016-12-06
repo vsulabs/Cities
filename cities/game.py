@@ -1,7 +1,5 @@
-from django.shortcuts import render
 from django.template import loader
-from django.contrib import auth
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
 from .models import City
 from .storage import *
 import ast
@@ -34,8 +32,8 @@ def get_last(request):
 
 
 def get_key(city):
-    ch = city.name[0].lower()
-    return frequency.get(ch, 0)
+    char = city.name[0].lower()
+    return frequency.get(char, 0)
 
 
 def get_city(request, answer):
