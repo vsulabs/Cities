@@ -4,25 +4,27 @@ from django.contrib import auth
 from django.http import HttpResponse, HttpResponseRedirect
 from .models import City
 
+#TODO: session_key -> freq
 frequency = {}     # char -> amount
+#TODO: move to session / db
 answered = {}      # session_key -> set()
 last_step = {}     # session_key -> string
 
 for city in City.objects.all():
     if city.name == "":
-        continue;
+        continue
 
     ch = city.name[0].lower()
     value = frequency.get(ch, 0)
-    frequency[ch] = value + 1;
+    frequency[ch] = value + 1
 
 
 def login_user(username, key):
     # Если логинимся первый раз -- сохраняем текущий прогресс
-    if answered.get(username, None) is None:
+    if answered.get(username) is None:
         answered[username] = answered.get(key, set())
 
-    if last_step.get(username, None) is None:
+    if last_step.get(username) is None:
         last_step[username] = last_step.get(key, 'Москва')
 
 
@@ -80,7 +82,6 @@ def get_error_message(error):
 
 
 def init(request):
-
     template = loader.get_template('index.html')
     if not request.session.session_key:
         request.session.save()

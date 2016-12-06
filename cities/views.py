@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from .game import is_correct, get_city, get_error_message, init, get_last
 from .game import login_user
 
+# TODO: сложность, проигрыш компа
 
 def index(request):
     key = request.user.username
