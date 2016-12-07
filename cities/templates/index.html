@@ -11,12 +11,12 @@
 
 {{ city }}
 
-<!-- TODO: POST -->
-<form action=".">
+<form action="." method="POST">
 	<input name="answer" type="textfield"/>
   <br>
   <br>
-	<input type="submit" value="Ответить"/>
+    <input type="submit" value="Ответить"/>
+    {% csrf_token %}
 </form>
 <form action="reset">
 	<input type="submit" value="Сбросить"/>

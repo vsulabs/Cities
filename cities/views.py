@@ -10,7 +10,7 @@ def index(request):
     if len(last) == 0:
         return init(request)
 
-    answer = request.GET.get('answer', '')
+    answer = request.POST.get('answer', '')
     name = last
     error = ''
 
