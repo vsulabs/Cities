@@ -1,8 +1,9 @@
 from django.template import loader
 from django.http import HttpResponse
+from random import random
+import ast
 from .models import City
 from .storage import *
-import ast
 
 
 def get_answered(request):
@@ -42,11 +43,17 @@ def get_city(request, answer):
         last = answer[-2].upper()
 
     answered = get_answered(request)
-
     cities = City.objects.filter(name__startswith=last).all()
-    cities = (c for c in cities if c.name not in answered)
-    cities = sorted(cities, key=get_comparator(request))
-    name = cities[0].name
+    cities = (c for c in cities if c.name not in answered and c.name[0] == last)
+
+    lvl = request.session.get('lvl')
+    if lvl is None or lvl == 'easy':
+        cities = list(cities)
+        i = round(random() * len(cities))
+        name = cities[i].name
+    else:
+        cities = sorted(cities, key=get_comparator(request))
+        name = cities[0].name
 
     answered.append(answer)
     answered.append(name)

@@ -2,15 +2,13 @@ from django.contrib import auth
 from django.http import HttpResponseRedirect
 from .game import *
 
-# TODO: сложность, проигрыш компа
-
-
 def index(request):
     lvl = request.POST.get('lvl')
     if lvl is None:
         template = loader.get_template('index.html')
         return HttpResponse(template.render({}, request))
 
+    request.session['lvl'] = lvl
     return HttpResponseRedirect("game")
 
 
