@@ -1,0 +1,9 @@
+{% if request.user.is_authenticated %}
+  <a href="/cities/logout">Logout</a>
+{% else %}
+  <a href="/cities/login">Login</a>
+{% endif %}
+<br>
+
+{% block content %}
+{% endblock %}

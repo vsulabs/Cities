@@ -1,0 +1,22 @@
+{% extends "auth.html" %}
+
+{% block content %}
+
+  {% if error %}
+  <p>{{ error }}</p>
+  <br>
+  {% endif %}
+
+  {{ city }}
+  <form action="." method="POST">
+    <input name="answer" type="textfield"/>
+    <br>
+    <br>
+      <input type="submit" value="Ответить"/>
+      {% csrf_token %}
+  </form>
+  <form action="../reset">
+    <input type="submit" value="Сбросить"/>
+  </form>
+
+{% endblock %}

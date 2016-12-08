@@ -1,23 +1,17 @@
-{% if authenticated %}
-  <a href="logout">Logout</a>
-{% else %}
-  <a href="login">Login</a>
-{% endif %}
+{% extends "auth.html" %}
 
-{% if error %}
-<p>{{ error }}</p>
-{% endif %}
-<br>
+{% block content %}
 
-{{ city }}
-
-<form action="." method="POST">
-	<input name="answer" type="textfield"/>
-  <br>
-  <br>
-    <input type="submit" value="Ответить"/>
+  Выберите сложность
+  <form action="." method="POST">
+    <select name="lvl">
+      <option value="easy">Легко</option>
+      <option value="hard">Сложно</option>
+    </select>
+    <br>
+    <br>
+    <input type="submit" value="Играть"/>
     {% csrf_token %}
-</form>
-<form action="reset">
-	<input type="submit" value="Сбросить"/>
-</form>
+  </form>
+
+{% endblock %}

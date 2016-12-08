@@ -26,6 +26,8 @@ def get_last(request):
 
 def get_comparator(request):
     frequency = get_data(request, 'frequency')
+    if isinstance(frequency, str):
+        frequency = ast.literal_eval(frequency)
 
     def get_key(city):
         char = city.name[0].lower()

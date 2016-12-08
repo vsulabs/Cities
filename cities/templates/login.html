@@ -3,12 +3,13 @@
 {% endif %}
 
 <form action="." method="POST">
-  Username:
-  <input name="username" type="textfield"/>
-  <br>
-  Password:
-  <input name="password" type="password"/>
-  <br>
-  <input value="Login" type="submit"/>
-  {% csrf_token %}
+    Username:
+    <input type="textfield" name="username" />
+    <br>
+    Password:
+    <input type="password" name="password" />
+    <br>
+    <input type="submit" value="Login" />
+    <input type="hidden" name="referer" value="{{ request.META.HTTP_REFERER }}" />
+    {% csrf_token %}
 </form>
